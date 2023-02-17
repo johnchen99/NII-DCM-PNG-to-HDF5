@@ -5,23 +5,28 @@ import numpy as np
 from natsort import natsorted
 import h5py
 
-# Convert .png to .h5
+# Convert .nii to .h5
 def nii_to_hdf5(mode,path):
     nii_list=np.empty(0)
     for nii in natsorted(os.listdir(path+'/'+mode)):
+        # Load nii file and get image data as a numpy array
         img = nib.load(path+'/'+mode+'/'+nii).get_fdata()
         arr = np.array(img)
+        # Append array to nii_list
         nii_list = np.append(nii_list, arr)
         print(f'Processed nii: '+nii)
 
     f = h5py.File(h5_main_path, 'a') 
     if mode == 'ct':
+        # Create ct dataset and store data from nii_list
         f.create_dataset(name='ct', data = nii_list,chunks=True, compression='gzip', compression_opts=9, shuffle=True)  
         print(f'Done Processed CT')
 
     else:
+        # Create label dataset and store data from nii_list
         f.create_dataset(name='label', data = nii_list,chunks=True, compression='gzip', compression_opts=9, shuffle=True)  
         print(f'Done Processed LABEL')
+    # Close the HDF5 file
     f.close() 
 
 # Paths 
